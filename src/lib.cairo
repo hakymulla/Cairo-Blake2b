@@ -265,7 +265,6 @@ fn reset_span(mut m: Span<u8>) -> Span<u8> {
 }
 
 fn g(r: u32, i: usize, a: usize, b: usize, c: usize, d: usize, ref v: Felt252Vec<u64>, ref m: Span<u64>) {
-    
     let mut v_a = v[a];
     let mut v_b = v[b];
     let mut v_c = v[c];
@@ -323,8 +322,7 @@ fn store64(ref b: Span<u8>, v: u64) {
     }
 }
 
-fn replace_at_index<T, +core::traits::Drop<T>, +core::traits::Copy<T>>
-    (span: Span<T>, index: usize, new_value: T) -> Array<T> {
+fn replace_at_index<T, +Drop<T>, +Copy<T>> (span: Span<T>, index: usize, new_value: T) -> Array<T> {
     let mut new_arr = ArrayTrait::<T>::new();
     let mut i = 0;
     let length = span.len();
@@ -343,14 +341,25 @@ fn replace_at_index<T, +core::traits::Drop<T>, +core::traits::Copy<T>>
     new_arr
 }
 
+fn byte_to_array(string: ByteArray) -> Span<u8> {
+    let mut result =  ArrayTrait::<u8>::new();
+    for x in string {
+        result.append(x);
+    }
+    result.span()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_finalize_hello_world() {
         let mut blake_state = Blake2bTrait::new(64);
-        let mut value = array![104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100].span();
-        blake_state.update(value);
+        let string: ByteArray = "hello world";
+        let value_arr = byte_to_array(string);
+
+        blake_state.update(value_arr);
+
         assert_eq!(blake_state.h, array![7640891576939301192, 13503953896175478587, 4354685564936845355, 11912009170470909681, 5840696475078001361, 11170449401992604703, 2270897969802886507, 6620516959819538809].span());
         assert_eq!(blake_state.t, array![0, 0].span());
         assert_eq!(blake_state.f, array![0, 0].span());
@@ -359,16 +368,15 @@ mod tests {
 
         let out = blake_state.finalize();
         assert_eq!(out, array![2, 28, 237, 135, 153, 41, 108, 236, 165, 87, 131, 42, 185, 65, 165, 11, 74, 17, 248, 52, 120, 207, 20, 31, 81, 249, 51, 246, 83, 171, 159, 188, 192, 90, 3, 124, 221, 190, 208, 110, 48, 155, 243, 52, 148, 44, 78, 88, 205, 241, 164, 110, 35, 121, 17, 204, 215, 252, 249, 120, 124, 188, 127, 208]);
-
     }
 
       #[test]
     fn test_finalize() {
-        // 'the crazy red fox moved right pass the less red right road in lagos'
         let mut blake_state = Blake2bTrait::new(64);
-        let mut value = array![116, 104, 101, 32, 99, 114, 97, 122, 121, 32, 114, 101, 100, 32, 102, 111, 120, 32, 109, 111, 118, 101, 100, 32, 114, 105, 103, 104, 116, 32, 112, 97, 115, 115, 32, 116, 104, 101, 32, 108, 101, 115, 115, 32, 114, 101, 100, 32, 114, 105, 103, 104, 116, 32, 114, 111, 97, 100, 32, 105, 110, 32, 108, 97, 103, 111, 115].span();
-        
-        blake_state.update(value);
+        let string: ByteArray = "the crazy red fox moved right pass the less red right road in lagos";
+        let value_arr = byte_to_array(string);
+
+        blake_state.update(value_arr);
 
         let out = blake_state.finalize();
         assert_eq!(out, array![24, 173, 18, 86, 213, 8, 168, 239, 85, 149, 100, 49, 105, 83, 0, 233, 102, 158, 157, 247, 49, 90, 67, 54, 62, 52, 179, 159, 242, 142, 77, 124, 212, 244, 186, 142, 181, 127, 169, 215, 166, 205, 11, 122, 240, 244, 4, 155, 93, 67, 59, 98, 231, 220, 166, 182, 154, 163, 25, 97, 139, 219, 146, 225]);

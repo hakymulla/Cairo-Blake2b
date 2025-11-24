@@ -23,11 +23,7 @@ pub fn rotate_right(x: u64, n: u64) -> u64 {
 pub fn array_to_byte_array(bytes_span: Array<u8>) -> ByteArray{
     let mut byte_array: ByteArray = "";
     let mut i = 0;
-    loop {
-        if i == bytes_span.len() {
-            break;
-        }
-
+    while i != bytes_span.len() {
         let byte = *bytes_span.at(i);
         byte_array.append_byte(byte);
         i += 1;
